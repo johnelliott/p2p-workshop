@@ -1,11 +1,13 @@
 var net = require('net');
 
-var client = net.connect(8124, ()=>{
-  console.log('client connection!');
+var socket = net.connect(8124, 'localhost', ()=>{
+  console.log('connection!', Date.now());
 });
 
-client.write('hello this is client');
-client.on('data', (data)=>{
-  console.log('data', data.toString());
-  client.end();
+process.stdin.on('data', (data)=>{
+  socket.write(data);
+});
+
+socket.on('data', (data)=>{
+  process.stdout.write(data);
 });
