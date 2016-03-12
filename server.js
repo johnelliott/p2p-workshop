@@ -15,7 +15,9 @@ var server = net.createServer((socket)=>{
   })
 
   socket.on('data', (data)=>{
-    socket.write(data);
+    activeSockets.forEach((s)=>{
+      s.write(data);
+    });
   });
 });
 
