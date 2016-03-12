@@ -1,9 +1,13 @@
 var net = require('net');
 var streamSet = require('stream-set');
 var jsonStream = require('duplex-json-stream');
+var register = require('register-multicast-dns');
+
+// set up server DNS
+var serverName = process.argv[2];
+register(`${serverName}.local`);
 
 var activeSockets = streamSet();
-
 var server = net.createServer((socket)=>{
 
   // turn the transport stream into an object stream
