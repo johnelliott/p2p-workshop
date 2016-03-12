@@ -15,14 +15,16 @@ var activePeers = streamSet();
 // and the peers are json duplex streams....
 
 swarm.on('connection', function(socket, id) {
-    console.log(`socket:${socket} connected to ${id}`);
-    // Now that we have acceess to the socket, set the process.stdOut
-    socket.on('data', (data)=>{
-      process.stdout.write(data);
+    console.log(`connected to ${id}`);
+    // Now that we have acceess to a peer, add the event listener to print that peer's message to StdOut
+    socket.on('data', (buffer)=>{
+      //process.stdout.write(`${data.nick} > ${data.msg}`);
+      var data = JSON.parse(buffer);
+      process.stdout.write(`${data.nick} > ${data.msg}`);
     });
     // Add a peer json duplex stream to the stream set
     var peer = jsonStream(socket);
-    // add the peer to the duplex stream group
+    // Add the peer to the duplex stream group
     activePeers.add(peer);
 });
 
@@ -31,5 +33,3 @@ process.stdin.on('data', (data)=>{
     p.write({nick: nickname, msg: data.toString()});
   });
 });
-
-// TODO write to local socket
