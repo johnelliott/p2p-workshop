@@ -2,7 +2,7 @@ var level = require('level');
 var scuttleup = require('scuttleup');
 
 var db = level('./logs.db');
-var log = scuttleup(db);
+var log = scuttleup(db, {valueEncoding: 'utf-8'});
 
 var changes = log.createReadStream({
   live: true
