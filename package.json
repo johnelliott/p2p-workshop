@@ -4,6 +4,7 @@
   "description": "",
   "main": "server.js",
   "dependencies": {
+    "debug": "^2.2.0",
     "duplex-json-stream": "^1.0.1",
     "fully-connected-topology": "^1.1.1",
     "lookup-multicast-dns": "^1.0.3",
@@ -13,7 +14,10 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "eduardo": "DEBUG=p2p nodemon peer.js eduardo localhost:3000 localhost:3001",
+    "mafintosh": "DEBUG=p2p nodemon peer.js mafintosh localhost:3001 localhost:3002",
+    "watson": "DEBUG=p2p nodemon peer.js watson localhost:3002"
   },
   "keywords": [
     "stream",
