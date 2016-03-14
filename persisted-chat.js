@@ -20,13 +20,23 @@ var swarm = topology(`localhost:${hashPort(me)}`);
 var activePeers = streamSet();
 
 // Create logs for the current user
+var logsConfig = {live: true, valueEncoding: 'utf-8'};
 var logs = scuttleup(level(me + '.db')); // use a database per user
+
+swarm.on('connection', function (socket, id) {
+  debug('info> direct connection to', id)
+  socket.pipe(logs.createReplicationStream(logsConfig)).pipe(socket)
+});
+
+// print out what we are storing in the logs
+logs.createReadStream(logsConfig);
+logs.on('data', debug);
 
 // Find other hosts
 friends.forEach(function friendFinder(f) {
   lookup(`${f}.local`, function(err, ip) {
     if (err) {
-      console.log('Error looking up dns', err);
+      debug('Error looking up dns', err);
       process.exit(1);
     }
     debug(`Resolved ${f} -> ${ip}`)
@@ -78,7 +88,9 @@ process.stdin.on('data', (data)=>{
   // Update own last message
   peerIds[sessionId] = seq;
   //debug('Updating sequence', seq);
-  share({nick: me, msg: data.toString(), id: sessionId, seq: seq});
+  var content = {nick: me, msg: data.toString(), id: sessionId, seq: seq};
+  share(content);
+  logs.append(content);
 });
 
 function print (data) {

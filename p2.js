@@ -1,8 +1,6 @@
 
 var debug = require('debug')('pers');
 var topology = require('fully-connected-topology');
-var streamSet = require('stream-set');
-var jsonStream = require('duplex-json-stream');
 var lookup = require('lookup-multicast-dns');
 var register = require('register-multicast-dns');
 var hashPort = require('hash-to-port');
@@ -17,7 +15,6 @@ debug(`About to register at ${me}`);
 register(me);
 
 var swarm = topology(`localhost:${hashPort(me)}`);
-var activePeers = streamSet();
 var logsConfig = {live: true, valueEncoding: 'utf-8'};
 var logs = scuttleup(level(me + '.db')); // use a database per user
 
@@ -38,16 +35,25 @@ friends.forEach(function friendFinder(f) {
 
 swarm.on('connection', function(socket, id) {
     debug(`Connected -> ${id}`);
-   // Add a peer json duplex stream to the stream set
-  activePeers.add(jsonStream(socket));
-  //socket.pipe(logs.createReplicationStream(logsConfig)).pipe(socket)
+    socket.pipe(logs.createReplicationStream(logsConfig)).pipe(socket);
 });
 
 process.stdin.on('data', function datInputHandler(data) {
-    debug('CLI data', data.toString());
-    logs.append(data);
+    //debug('CLI data', data.toString());
+    logs.append(`${me} > ${data}`);
 });
 
+var history = {};
 // print out what we are storing in the logs
 var rs = logs.createReadStream(logsConfig);
-rs.on('data', debug);
+rs.on('data', function logReadHandler(data) {
+    if (history.peer > data.seq) {
+        debug('Old Data', data);
+        debug(`becase the latest news is ${history.peer}`);
+    }
+    else {
+        debug('New data', data);
+        history.peer = data.seq; 
+        process.stdout.write(data.entry);
+    }
+});
