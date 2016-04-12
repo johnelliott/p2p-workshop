@@ -1,5 +1,4 @@
-
-var debug = require('debug')('pers');
+var debug = require('debug')('p2pchat');
 var topology = require('fully-connected-topology');
 var lookup = require('lookup-multicast-dns');
 var register = require('register-multicast-dns');
@@ -34,26 +33,26 @@ friends.forEach(function friendFinder(f) {
 });
 
 swarm.on('connection', function(socket, id) {
-    debug(`Connected -> ${id}`);
-    socket.pipe(logs.createReplicationStream(logsConfig)).pipe(socket);
+  debug(`Connected -> ${id}`);
+  socket.pipe(logs.createReplicationStream(logsConfig)).pipe(socket);
 });
 
 process.stdin.on('data', function datInputHandler(data) {
-    //debug('CLI data', data.toString());
-    logs.append(`${me} > ${data}`);
+  //debug('CLI data', data.toString());
+  logs.append(`${me} > ${data}`);
 });
 
 var history = {};
 // print out what we are storing in the logs
 var rs = logs.createReadStream(logsConfig);
 rs.on('data', function logReadHandler(data) {
-    if (history.peer > data.seq) {
-        debug('Old Data', data);
-        debug(`becase the latest news is ${history.peer}`);
-    }
-    else {
-        debug('New data', data);
-        history.peer = data.seq; 
-        process.stdout.write(data.entry);
-    }
+  if (history.peer > data.seq) {
+    debug('Old Data', data);
+    debug(`becase the latest news is ${history.peer}`);
+  }
+  else {
+    debug('New data', data);
+    history.peer = data.seq;
+    process.stdout.write(data.entry);
+  }
 });
